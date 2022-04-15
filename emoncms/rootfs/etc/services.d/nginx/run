@@ -4,6 +4,8 @@
 # Runs the Nginx daemon
 # ==============================================================================
 # Wait for PHP-FPM to become available
-bashio::net.wait_for 9001
-bashio::log.info "Starting NGinx server..."
-exec nginx -g "daemon off;"
+bashio::net.wait_for 9002
+
+bashio::log.info "Starting NGinx...."
+
+exec nginx
