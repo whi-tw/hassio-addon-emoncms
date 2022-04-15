@@ -1,47 +1,16 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
 # ==============================================================================
 # Home Assistant Community Add-on: Emoncms
 # Runs the PHP-FPM daemon
 # ==============================================================================
-export MYSQL_HOST
-export MYSQL_NAME
-export MYSQL_USERNAME
-export MYSQL_PASSWORD
-export MYSQL_PORT
 
-if bashio::config.has_value 'remote_mysql_host';then
-    MYSQL_HOST=$(bashio::config "remote_mysql_host")
-    MYSQL_NAME=$(bashio::config "remote_mysql_database")
-    MYSQL_USERNAME=$(bashio::config "remote_mysql_username")
-    MYSQL_PASSWORD=$(bashio::config "remote_mysql_password")
-    MYSQL_PORT=$(bashio::config "remote_mysql_port")
-else
-    MYSQL_HOST=$(bashio::services mysql "host")
-    MYSQL_NAME=emoncms
-    MYSQL_USERNAME=$(bashio::services mysql "username")
-    MYSQL_PASSWORD=$(bashio::services mysql "password")
-    MYSQL_PORT=$(bashio::services mysql "port")
-fi
-
-export MQTT_ENABLED=false
-export MQTT_HOST
-export MQTT_USER
-export MQTT_PASSWORD
-export MQTT_BASETOPIC
-
-if bashio::config.has_value 'remote_mqtt_host'; then
-    MQTT_ENABLED=true
-    MQTT_HOST=$(bashio::config "remote_mqtt_host")
-    MQTT_USER=$(bashio::config "remote_mqtt_username")
-    MQTT_PASSWORD=$(bashio::config "remote_mqtt_password")
-    MQTT_BASETOPIC=$(bashio::config "mqtt_basetopic" "emon")
-elif bashio::services.available mqtt; then
-    MQTT_ENABLED=true
-    MQTT_HOST=$(bashio::services mqtt "host")
-    MQTT_USER=$(bashio::services mqtt "username")
-    MQTT_PASSWORD=$(bashio::services mqtt "password")
-    MQTT_BASETOPIC=$(bashio::config "mqtt_basetopic" "emon")
-fi
+# shellcheck source=../../env-includes/mysql.sh
+source /etc/env-includes/mysql.sh
+# shellcheck source=../../env-includes/mqtt.sh
+source /etc/env-includes/mqtt.sh
+# shellcheck source=../../env-includes/etc.sh
+source /etc/env-includes/etc.sh
 
 bashio::log.info "Starting PHP-FPM server..."
 exec php-fpm7 --nodaemonize

@@ -6,7 +6,7 @@ description:
   Emoncms is a powerful open-source web-app for processing, logging and
   visualising energy, temperature and other environmental data.
 url: https://github.com/inverse/hassio-addon-emoncms
-ingress: true
+webui: "[PROTO:ssl]://[HOST]:[PORT:9541]"
 startup: system
 init: false
 arch:
@@ -21,11 +21,11 @@ services:
 map:
   - ssl
 ports:
-  80/tcp: null
+  80/tcp: 9541
 ports_description:
-  80/tcp: Web interface (Not required for Ingress)
+  80/tcp: Web interface
 options:
-  ssl: true
+  ssl: false
   certfile: fullchain.pem
   keyfile: privkey.pem
 schema:
@@ -33,13 +33,5 @@ schema:
   ssl: bool
   certfile: str
   keyfile: str
-  remote_mysql_host: str?
-  remote_mysql_database: str?
-  remote_mysql_username: str?
-  remote_mysql_password: password?
-  remote_mysql_port: port?
   mqtt_basetopic: str?
-  remote_mqtt_host: str?
-  remote_mqtt_username: str?
-  remote_mqtt_password: password?
 # image: inversechi/hassio-emoncms-{arch}
