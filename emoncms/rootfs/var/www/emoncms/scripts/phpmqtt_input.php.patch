@@ -1,0 +1,30 @@
+--- phpmqtt_input.php	2022-04-26 16:48:21.000000000 +0100
++++ phpmqtt_input.php.new	2022-04-26 16:50:56.000000000 +0100
+@@ -43,7 +43,7 @@
+     $fp = fopen("/var/lock/emoncms_mqtt.lock", "w");
+     if (! flock($fp, LOCK_EX | LOCK_NB)) { echo "Already running\n"; die; }
+     
+-    chdir(dirname(__FILE__)."/../../../");
++    chdir(dirname(__FILE__)."/../");
+     require "Lib/EmonLogger.php";
+     require "process_settings.php";
+     
+@@ -164,7 +164,7 @@
+ 
+         // PUBLISH
+         // loop through all queued items in redis
+-        if ($connected && $pub_count>10) {
++        if ($redis && $connected && $pub_count>10) {
+             $pub_count = 0;
+             $publish_to_mqtt = $redis->hgetall("publish_to_mqtt");
+             foreach ($publish_to_mqtt as $topic=>$value) {
+@@ -178,8 +178,8 @@
+                     $mqtt_client->publish($data['topic'], json_encode(array("time"=>$data['time'],"value"=>$data['value'])));
+                 }
+             }
++            $pub_count++;
+         }
+-        $pub_count++;
+ 
+         if ((time()-$last_heartbeat)>300) {
+             $last_heartbeat = time();

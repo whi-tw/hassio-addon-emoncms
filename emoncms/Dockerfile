@@ -1,7 +1,22 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base/amd64:11.1.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base/amd64:11.1.2
+
+FROM php:7.4-fpm-alpine AS buildmosquitto
+RUN \
+    apk add --no-cache \
+        $PHPIZE_DEPS \
+        mosquitto-dev
+COPY lib/Mosquitto-PHP /src
+
+WORKDIR /src
+
+RUN \
+    phpize \
+    && ./configure --with-mosquitto=/usr/lib/ \
+    && make
+
+
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
-
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -10,17 +25,22 @@ RUN \
     apk add --no-cache \
         nginx=1.20.2-r0 \
         mariadb-client=10.6.7-r0 \
-        php7-ctype=7.4.28-r0 \
-        php7-curl=7.4.28-r0 \
-        php7-fpm=7.4.28-r0 \
-        php7-gettext=7.4.28-r0 \
-        php7-json=7.4.28-r0 \
-        php7-mbstring=7.4.28-r0 \
-        php7-mysqli=7.4.28-r0 \
-        php7-opcache=7.4.28-r00 \
-        php7-session=7.4.28-r0 \
-        php7-zip=7.4.28-r0 \
-        php7=7.4.28-r0
+        mosquitto-libs=2.0.14-r0 \
+        php7-ctype=7.4.29-r0 \
+        php7-curl=7.4.29-r0 \
+        php7-fpm=7.4.29-r0 \
+        php7-gettext=7.4.29-r0 \
+        php7-json=7.4.29-r0 \
+        php7-mbstring=7.4.29-r0 \
+        php7-mysqli=7.4.29-r0 \
+        php7-opcache=7.4.29-r0 \
+        php7-session=7.4.29-r0 \
+        php7-zip=7.4.29-r0 \
+        php7=7.4.29-r0
+
+COPY --from=buildmosquitto /src/modules/mosquitto.so /usr/lib/php7/modules/mosquitto.so
+RUN \
+    echo 'extension=mosquitto.so' > /etc/php7/conf.d/00_mosquitto.ini
 
 ARG EMONCMS_TAG=10.8.5
 ARG EMONCMS_DASHBOARD_TAG=2.1.5
@@ -52,6 +72,15 @@ RUN \
 
 # Copy root filesystem
 COPY rootfs /
+
+# patch MQTT script so it starts properly
+RUN \
+    apk add --no-cache patch \
+    && cd /var/www/emoncms/scripts/ \
+    && patch phpmqtt_input.php phpmqtt_input.php.patch \
+    && rm phpmqtt_input.php.patch \
+    && apk del --no-cache --purge patch
+
 
 # Build arguments
 ARG BUILD_ARCH

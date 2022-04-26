@@ -1,0 +1,3 @@
+[submodule "emoncms/lib/Mosquitto-PHP"]
+	path = emoncms/lib/Mosquitto-PHP
+	url = https://github.com/mgdm/Mosquitto-PHP

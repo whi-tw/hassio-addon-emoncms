@@ -1,0 +1,18 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Home Assistant Community Add-on: Emoncms
+# Runs the emoncms mqtt input daemon
+# ==============================================================================
+# Wait for PHP-FPM to become available
+bashio::net.wait_for 9002
+
+# shellcheck source=../../env-includes/mysql.sh
+source /etc/env-includes/mysql.sh
+# shellcheck source=../../env-includes/mqtt.sh
+source /etc/env-includes/mqtt.sh
+# shellcheck source=../../env-includes/etc.sh
+source /etc/env-includes/etc.sh
+
+bashio::log.info "Starting MQTT Input...."
+exec /usr/bin/php7 /var/www/emoncms/scripts/phpmqtt_input.php
